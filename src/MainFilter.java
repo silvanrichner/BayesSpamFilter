@@ -5,15 +5,14 @@ public class MainFilter {
   static Training t;
   static MailChecker mc;
   final static String PATH = System.getProperty("user.dir") + File.separator + "res" + File.separator;
-  final static double DEFAULTVALUE = 0.00000001;
   final static double THRESHOLD=0.6;
 
   public static void main(String[] args) {
 //
     //trains and calibrates Filter
-    t = new Training(PATH, DEFAULTVALUE);
+    t = new Training(PATH);
     //checks
-    mc = new MailChecker(t.getProbSpam(), t.getProbHam(), DEFAULTVALUE);
+    mc = new MailChecker(t.getSpamliness());
 
     //Prints entrys of SpamCount if count>10
     // printSpamDictWithProb();

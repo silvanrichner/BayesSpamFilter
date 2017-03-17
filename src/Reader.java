@@ -15,6 +15,8 @@ public class Reader {
 				content.append(" ");
 			}
 			
+			br.close();
+			
 			return content.toString();
 		} catch (Exception e) {
 			System.out.println("Failed to read file");
