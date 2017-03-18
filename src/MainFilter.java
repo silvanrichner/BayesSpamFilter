@@ -5,7 +5,7 @@ public class MainFilter {
   static Training t;
   static MailChecker mc;
   final static String PATH = System.getProperty("user.dir") + File.separator + "res" + File.separator;
-  final static double THRESHOLD=0.6;
+  final static double THRESHOLD=0.88;
 
   public static void main(String[] args) {
 //
@@ -28,6 +28,7 @@ public class MainFilter {
     File[] listOfFiles = folder.listFiles();
     int spamCounter = 0;
     int hamCounter = 0;
+    int gesamt=0;
 
     for (File f : listOfFiles) {
       double d = mc.check(Reader.read(f.toString()));
@@ -37,16 +38,19 @@ public class MainFilter {
         spamCounter++;
         //	System.out.println((Reader.read(f.toString())));
       }
+      gesamt++;
+
     }
     System.out.println();
     System.out.println();
-    System.out.println("---------Auswertung hamTest---------");
+    System.out.println("---------Auswertung hamTest anz Mails: "+ gesamt+" ---------");
     System.out.println("hamCounter: " + hamCounter);
     System.out.println("spamCounter: " + spamCounter);
     System.out.println();
 
     hamCounter = 0;
     spamCounter = 0;
+    gesamt=0;
 
     folder = new File(PATH + "spam-test");
     listOfFiles = folder.listFiles();
@@ -57,8 +61,9 @@ public class MainFilter {
       } else {
         spamCounter++;
       }
+      gesamt++;
     }
-    System.out.println("---------Auswertung spamTest---------");
+    System.out.println("---------Auswertung spamTest anz Mails: "+ gesamt+" ---------");
     System.out.println("hamCounter: " + hamCounter);
     System.out.println("spamCounter: " + spamCounter);
   }
