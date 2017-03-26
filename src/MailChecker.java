@@ -1,75 +1,81 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class MailChecker {
-//	private Map<String, Double> probSpam;
-//	private Map<String, Double> probHam;
-	
-	private Map<String, Double> spamliness;
-//	private double defaultValue;
 
-	public MailChecker(Map<String, Double> spamliness) {
-//		this.probHam = probHam;
-//		this.probSpam = probSpam;
-		this.spamliness = spamliness;
-//		this.defaultValue = defaultValue;
-	}
+  private Training training;
 
-	public double check(String mail) {
-		// mail=mail.toLowerCase();
+  public MailChecker(Training training) {
+    this.training = training;
+  }
 
-		String[] words = mail.split(" ");
-		Set<String> wordSet = new HashSet<String>();
-		Collections.addAll(wordSet, words);
-		List<Double> wordValues = new ArrayList<Double>();
+  public double check(String mail) {
+    //   System.out.println(mail);
+    String[] words = mail.split(" ");
+    Map<String, Double> map = new HashMap<>();
+    //  System.out.println("email enthält "+words.length+" wörter");
+    int i = 0;
+    for (String s : words) {
+      double spamProb, hamProb;
+      if (training.probSpam.containsKey(s)) {
+        i++;
+        spamProb = training.probSpam.get(s);
+        hamProb = training.probHam.get(s);
+        map.put(s, spamProb / (spamProb + hamProb));
 
-		for (String s : wordSet) {
-//			//ignore the word if it doesn't appear in the training data
-//			if (probHam.containsKey(s) || probSpam.containsKey(s)) {
-//				//probablity of the word to be in a spam mail
-//				double spam;
-//				if (probSpam.containsKey(s)) {
-//					spam = probSpam.get(s);
-//				} else {
-//					spam = defaultValue;
-//				}
-//				//probability of the word to be in a ham mail
-//				double ham;
-//				if (probHam.containsKey(s)) {
-//					ham = probHam.get(s);
-//				} else {
-//					ham = defaultValue;
-//				}
-				
-				//the overall "spamliness" of the word (non biased): Pr(S|W) = Pr(W|S) / ( Pr(W|S) + (Pr(W|H) )
-//				wordValues.add(spam / (spam + ham));
-			if(spamliness.containsKey(s)){
-				wordValues.add(spamliness.get(s));
-			}
-//			}
-		}
 
-		/*
-		 * FAILED DUE TO FLOATING POINT UNDERFLOW double product = 1; for(double
-		 * wv : wordValues){ product *= wv; }
-		 * 
-		 * double oneMinusProduct = 1; for(double wv : wordValues){
-		 * oneMinusProduct*=(1 - wv); }
-		 */
-		
-		//combining all the spamliness values of the words in the mail ( n = sum(ln(1-wv) - ln(wv) )
-		double n = 0;
-		for (double wv : wordValues) {
-			n += (Math.log(1 - wv) - Math.log(wv));
-		}
-		
-		//calculate the final spamliness of the mail ( p = 1 / (1 + e^n) ) 
-		double p = 1 / (1 + Math.pow(Math.E, n));
-		return p;
-	}
+        //  System.out.println(s + ": " + spamProb / (spamProb + hamProb));
+      }
+    }
 
+
+
+
+/*TODO Implement Bayes formula, list contains all Words this email contains
+    word.hamValue is the probability the word is ham
+    word.spamValue vice versa
+    word.spaminess is spamvalue/(spamvalue+hamvalue)
+    https://en.wikipedia.org/wiki/Naive_Bayes_spam_filtering#Other_expression_of_the_formula_for_combining_individual_probabilities
+
+    Problem: n wird negativ und gross... damit 1/1... etwas witzlos
+
+    Andere Variante failed weil Wert zu klein wird(floating point underflow)
+*/
+
+
+    //Variante 1 nach Wikipedia
+
+    float n = 0;
+    for (String key : map.keySet()) {
+      n += (Math.log(1 - map.get(key)) - Math.log(map.get(key)));
+    }
+   // System.out.println(1 + "/" + "(1+" + "E^" + (n));
+    double p = 1 / (1 + Math.exp(n));
+   // System.out.println("mail contained " + i + " significant words out of " + words.length + ". Probability that this Email is Spam is " + " 1/(1+e^" + n + ")" + "=" + p);
+    return p;
+
+
+    //Variante 2 mit floating point underflow für lange Strings
+/*
+    float multiplyProb = 1.0f;
+    float prodOfOneMinusProb = 1.0f;
+    for (int j = 0; j < words.length; j++) {
+      if (map.containsKey(words[j])) {
+        multiplyProb *= map.get(words[j]);
+        prodOfOneMinusProb *= (1.0f - map.get(words[j]));
+      }
+    }
+    float probOfSpam = multiplyProb / (multiplyProb + prodOfOneMinusProb);
+    System.out.println(probOfSpam);
+    return probOfSpam;
+*/
+  }
 }
+
+
+
+
+
+
+
+

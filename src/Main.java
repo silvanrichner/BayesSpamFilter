@@ -1,28 +1,36 @@
 import java.io.File;
 import java.util.Map;
 
-public class MainFilter {
+public class Main {
   static Training t;
   static MailChecker mc;
   final static String PATH = System.getProperty("user.dir") + File.separator + "res" + File.separator;
-  final static double THRESHOLD=0.88;
 
   public static void main(String[] args) {
 //
     //trains and calibrates Filter
     t = new Training(PATH);
     //checks
-    mc = new MailChecker(t.getSpamliness());
+    mc = new MailChecker(t);
 
-    //Prints entrys of SpamCount if count>10
-    // printSpamDictWithProb();
+   double calibration= new Calibration(PATH,mc).getCalibrationValue();
 
-    //Prints entrys of HamCount if count>10
-//    printHamDictWithProb();
-    test();
+
+    System.out.println("Calibration Value is "+calibration);
+    System.out.println("----------------------");
+
+    String testString = "buy viagra now online";
+    String testString2 = "Office work";
+
+    System.out.println("Test for String "+testString +" "+ mc.check(testString));
+    System.out.println("Test for String "+testString2 +" "+ mc.check(testString2));
+
+
+     test(calibration);
   }
 
-  public static void test() {
+
+  public static void test(double calibration) {
 
     File folder = new File(PATH + "ham-test");
     File[] listOfFiles = folder.listFiles();
@@ -32,7 +40,7 @@ public class MainFilter {
 
     for (File f : listOfFiles) {
       double d = mc.check(Reader.read(f.toString()));
-      if (d > THRESHOLD) {
+      if (d < calibration) {
         hamCounter++;
       } else {
         spamCounter++;
@@ -56,7 +64,7 @@ public class MainFilter {
     listOfFiles = folder.listFiles();
     for (File f : listOfFiles) {
       double d = mc.check(Reader.read(f.toString()));
-      if (d > THRESHOLD) {
+      if (d < calibration) {
         hamCounter++;
       } else {
         spamCounter++;
